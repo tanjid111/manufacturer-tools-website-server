@@ -58,11 +58,26 @@ async function run() {
             res.send(reviews)
         })
 
+        //Post new reviews
+        app.post('/reviews', async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            res.send({ success: true, result });
+        })
+
         //Post new purchase
         app.post('/purchase', async (req, res) => {
             const purchase = req.body;
             const result = await purchaseCollection.insertOne(purchase);
             res.send({ success: true, result });
+        })
+
+        //Get purchase with user's email id for MyOrder dashboard
+        app.get('/purchase', async (req, res) => {
+            const customerEmail = req.query.customerEmail;
+            const query = { customerEmail: customerEmail };
+            const purchases = await purchaseCollection.find(query).toArray();
+            res.send(purchases);
         })
 
 
