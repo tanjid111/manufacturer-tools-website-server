@@ -117,6 +117,13 @@ async function run() {
 
 
         /* ----------------------------------------------------Purchases-------------------------------------------- */
+        app.get('/purchase', verifyJWT, verifyAdmin, async (req, res) => {
+            const query = {};
+            const cursor = purchaseCollection.find(query)
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
         //Post new purchase
         app.post('/purchase', async (req, res) => {
             const purchase = req.body;
@@ -153,13 +160,6 @@ async function run() {
             const purchase = await purchaseCollection.findOne(query);
             res.send(purchase)
         })
-
-        // app.get('/purchase', async (req, res) => {
-        //     const query = {};
-        //     const cursor = purchaseCollection.find(query)
-        //     const result = await cursor.toArray();
-        //     res.send(result)
-        // })
 
         app.patch('/purchase/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
