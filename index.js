@@ -133,6 +133,23 @@ async function run() {
                 return res.status(403).send({ message: 'forbidden access' });
             }
         })
+
+        //Delete Purchase from My orders by  user
+        app.delete('/purchase/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await purchaseCollection.deleteOne(filter);
+            res.send(result)
+        })
+
+        ////Get Purchase data for payment by  user
+        app.get('/purchase/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const purchase = await purchaseCollection.findOne(query);
+            res.send(purchase)
+        })
+
         /* ----------------------------------------------------Users-------------------------------------------- */
         ///Making user admin
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
