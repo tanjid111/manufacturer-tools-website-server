@@ -92,9 +92,28 @@ async function run() {
         //Get purchase with user's email id for MyOrder dashboard
         app.get('/purchase', verifyJWT, async (req, res) => {
             const customerEmail = req.query.customerEmail;
-            const query = { customerEmail: customerEmail };
-            const purchases = await purchaseCollection.find(query).toArray();
-            res.send(purchases);
+            const decodedEmail = req.decoded.email;
+            if (customerEmail === decodedEmail) {
+                const query = { customerEmail: customerEmail };
+                const purchases = await purchaseCollection.find(query).toArray();
+                return res.send(purchases);
+            }
+            else {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+        })
+
+        ///Making user admin
+
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+
+            const filter = { email: email };
+            const updatedDoc = {
+                $set: { role: 'admin' },
+            };
+            const result = await userCollection.updateOne(filter, updatedDoc);
+            res.send(result);
         })
 
         ////Adding or Updating a user or a new user from use token
@@ -112,6 +131,13 @@ async function run() {
             res.send({ result, token });
         })
 
+        //get users for make admin
+        app.get('/user', verifyJWT, async (req, res) => {
+            const query = {};
+            const cursor = userCollection.find(query)
+            const users = await cursor.toArray();
+            res.send(users)
+        })
 
     }
     finally {
