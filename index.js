@@ -18,6 +18,7 @@ async function run() {
         const productCollection = client.db('manufacturer_tools').collection('products');
         const reviewCollection = client.db('manufacturer_tools').collection('reviews');
         const purchaseCollection = client.db('manufacturer_tools').collection('purchase');
+        const userCollection = client.db('manufacturer_tools').collection('users');
 
         //Get All Products
         app.get('/products', async (req, res) => {
@@ -78,6 +79,20 @@ async function run() {
             const query = { customerEmail: customerEmail };
             const purchases = await purchaseCollection.find(query).toArray();
             res.send(purchases);
+        })
+
+        ////Adding or Updating a user or a new user from use token
+
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
         })
 
 
