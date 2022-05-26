@@ -154,7 +154,7 @@ async function run() {
             res.send(purchase)
         })
 
-        app.get('/purchase', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/purchase', async (req, res) => {
             const query = {};
             const cursor = purchaseCollection.find(query)
             const result = await cursor.toArray();
