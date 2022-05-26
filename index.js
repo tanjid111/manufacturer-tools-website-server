@@ -170,6 +170,20 @@ async function run() {
             res.send(updatedDoc);
         })
 
+        app.put('/purchase/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const newPurchase = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    stat: newPurchase.stat
+                }
+            }
+            const updatedPurchase = await purchaseCollection.updateOne(filter, updatedDoc);
+            res.send(updatedPurchase);
+        })
+
+
         /* ----------------------------------------------------Users-------------------------------------------- */
         ///Making user admin
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
