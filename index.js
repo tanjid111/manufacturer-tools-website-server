@@ -36,6 +36,18 @@ async function run() {
         const purchaseCollection = client.db('manufacturer_tools').collection('purchase');
         const userCollection = client.db('manufacturer_tools').collection('users');
 
+        // Verify Admin  function
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester });
+            if (requesterAccount.role === 'admin') {
+                next()
+            }
+            else {
+                return res.status(403).send({ message: 'forbidden access' });
+            }
+        }
+        /* ----------------------------------------------------Products-------------------------------------------- */
         //Get All Products
         app.get('/products', async (req, res) => {
             const query = {};
@@ -66,6 +78,23 @@ async function run() {
             const product = await productCollection.updateOne(filter, updatedDoc, options);
             res.send(product);
         })
+        //Adding/Posting Doctor from Add a doctor dashboard
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product);
+            res.send({ success: true, result });
+        })
+
+        //Delete Products from Manage orders by Admin
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await productCollection.deleteOne(filter);
+            res.send(result)
+        })
+
+
+        /* ----------------------------------------------------Reviews-------------------------------------------- */
 
         //Get All Reviews
         app.get('/reviews', async (req, res) => {
@@ -82,6 +111,8 @@ async function run() {
             res.send({ success: true, result });
         })
 
+
+        /* ----------------------------------------------------Purchases-------------------------------------------- */
         //Post new purchase
         app.post('/purchase', async (req, res) => {
             const purchase = req.body;
@@ -102,22 +133,28 @@ async function run() {
                 return res.status(403).send({ message: 'forbidden access' });
             }
         })
-
+        /* ----------------------------------------------------Users-------------------------------------------- */
         ///Making user admin
-
-        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
-
             const filter = { email: email };
             const updatedDoc = {
                 $set: { role: 'admin' },
             };
             const result = await userCollection.updateOne(filter, updatedDoc);
             res.send(result);
+
+        })
+
+        //Making admin api to make sure that only admin can access some restricted routes in dashboard
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
         })
 
         ////Adding or Updating a user or a new user from use token
-
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -132,7 +169,7 @@ async function run() {
         })
 
         //get users for make admin
-        app.get('/user', verifyJWT, async (req, res) => {
+        app.get('/user', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {};
             const cursor = userCollection.find(query)
             const users = await cursor.toArray();
