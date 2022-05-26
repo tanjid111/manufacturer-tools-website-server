@@ -154,6 +154,13 @@ async function run() {
             res.send(purchase)
         })
 
+        app.get('/purchase', verifyJWT, verifyAdmin, async (req, res) => {
+            const query = {};
+            const cursor = purchaseCollection.find(query)
+            const purchase = await cursor.toArray();
+            res.send(purchase)
+        })
+
         app.patch('/purchase/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
