@@ -1,7 +1,7 @@
 # PowerTools Manufacturing Website
 
 ### Livesite Link(Client): 
-https://laptop-inventory-management.firebaseapp.com/
+https://manufacturer-tools.web.app/
 
 ### Heroku Link(Server)
 https://serene-lake-48668.herokuapp.com/
