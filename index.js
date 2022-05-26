@@ -82,7 +82,7 @@ async function run() {
             const product = await productCollection.updateOne(filter, updatedDoc, options);
             res.send(product);
         })
-        //Adding/Posting Doctor from Add a doctor dashboard
+        //Adding/Posting 
         app.post('/products', async (req, res) => {
             const product = req.body;
             const result = await productCollection.insertOne(product);
@@ -157,8 +157,8 @@ async function run() {
         app.get('/purchase', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {};
             const cursor = purchaseCollection.find(query)
-            const purchase = await cursor.toArray();
-            res.send(purchase)
+            const result = await cursor.toArray();
+            res.send(result)
         })
 
         app.patch('/purchase/:id', verifyJWT, async (req, res) => {
