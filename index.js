@@ -37,6 +37,8 @@ async function run() {
         const reviewCollection = client.db('manufacturer_tools').collection('reviews');
         const purchaseCollection = client.db('manufacturer_tools').collection('purchase');
         const userCollection = client.db('manufacturer_tools').collection('users');
+        const userProfileCollection = client.db('manufacturer_tools').collection('usersProfile');
+        const paymentCollection = client.db('manufacturer_tools').collection('payments');
 
         // Verify Admin  function
         const verifyAdmin = async (req, res, next) => {
@@ -152,6 +154,21 @@ async function run() {
             res.send(purchase)
         })
 
+        app.patch('/purchase/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const result = await paymentCollection.insertOne(payment);
+            const updatedPurchase = await purchaseCollection.updateOne(filter, updatedDoc);
+            res.send(updatedDoc);
+        })
+
         /* ----------------------------------------------------Users-------------------------------------------- */
         ///Making user admin
         app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
@@ -194,10 +211,42 @@ async function run() {
             const users = await cursor.toArray();
             res.send(users)
         })
+        /* ----------------------------------------------------User Collection-------------------------------------------- */
+        // app.post('/userProfile', async (req, res) => {
+        //     const userProfile = req.body;
+        //     const result = await userProfileCollection.insertOne(userProfile);
+        //     res.send({ success: true, result });
+        // })
+        app.put('/userProfile/:email', async (req, res) => {
+            const email = req.params.email;
+            const userProfile = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: userProfile,
+            };
+
+            const result = await userProfileCollection.updateOne(filter, updatedDoc, options);
+            res.send(result);
+        })
+
+        app.post('/userProfile', async (req, res) => {
+            const userProfile = req.body;
+            const result = await userProfileCollection.insertOne(userProfile);
+            res.send({ success: true, result });
+        })
+
+        app.get('/userProfile', verifyJWT, async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const cursor = userProfileCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result)
+        })
         /* ----------------------------------------------------Payment-------------------------------------------- */
-        app.post('/create-payment-intent', async (req, res) => {
+        app.post('/create-payment-intent', verifyJWT, async (req, res) => {
             const product = req.body;
-            const price = product.price;
+            const price = product.totalPrice;
             const amount = price * 100;
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: amount,
