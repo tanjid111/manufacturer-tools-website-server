@@ -117,7 +117,7 @@ async function run() {
 
 
         /* ----------------------------------------------------Purchases-------------------------------------------- */
-        app.get('/purchase', verifyJWT, verifyAdmin, async (req, res) => {
+        app.get('/purchase', verifyJWT, async (req, res) => {
             const query = {};
             const cursor = purchaseCollection.find(query)
             const result = await cursor.toArray();
@@ -134,15 +134,9 @@ async function run() {
         //Get purchase with user's email id for MyOrder dashboard
         app.get('/purchase', verifyJWT, async (req, res) => {
             const customerEmail = req.query.customerEmail;
-            const decodedEmail = req.decoded.email;
-            if (customerEmail === decodedEmail) {
-                const query = { customerEmail: customerEmail };
-                const purchases = await purchaseCollection.find(query).toArray();
-                return res.send(purchases);
-            }
-            else {
-                return res.status(403).send({ message: 'forbidden access' });
-            }
+            const query = { customerEmail: customerEmail };
+            const purchases = await purchaseCollection.find(query).toArray();
+            return res.send(purchases);
         })
 
         //Delete Purchase from My orders by  user
